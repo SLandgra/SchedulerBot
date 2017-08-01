@@ -19,22 +19,16 @@ var web = new WebClient(token);
 
 let channel;
 
-rtm.on(RTM_EVENTS.MESSAGE, function(message) {
-  User.findOne({slackID: message.user})
-    .then((err, user) => {
-      if(!user){
-        new User({
-          slackID: message.user,
-          google: {}
-        }).save(function(err){
-          if(err){
-            console.log('Failed to save slack id')
-          }else{
-            console.log('Saved Slack Stuff')
-          }
-        })
-      }
-    })
+rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
+  var user = await User.findOne({slackID: message.user})
+    if(!user){
+      var newuser = new User({
+        slackID: message.user,
+        google: {}
+      })
+      user = await newuser.save()
+    }
+
   var authenticated = true;
   if (!authenticated) {
         // make user model
