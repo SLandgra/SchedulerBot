@@ -7,6 +7,10 @@ var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS;
 var token = process.env.SLACK_BOT_TOKEN || '';
 var apiToken = process.env.API_ACCESS_TOKEN;
 
+var mongoose = require('mongoose')
+var models = require('./models');
+var User = models.User;
+
 var rtm = new RtmClient(token);
 
 // WEB API
@@ -15,7 +19,22 @@ var web = new WebClient(token);
 
 let channel;
 
-rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
+rtm.on(RTM_EVENTS.MESSAGE, function(message) {
+  User.findOne({slackID: message.user})
+    .then((err, user) => {
+      if(!user){
+        new User({
+          slackID: message.user,
+          google: {}
+        }).save(function(err){
+          if(err){
+            console.log('Failed to save slack id')
+          }else{
+            console.log('Saved Slack Stuff')
+          }
+        })
+      }
+    })
   var authenticated = true;
   if (!authenticated) {
         // make user model
