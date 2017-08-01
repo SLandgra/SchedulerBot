@@ -29,7 +29,7 @@ router.get('/connect', function(req,res){
             'https://www.googleapis.com/auth/userinfo.profile'],
     state: encodeURIComponent(JSON.stringify({
       auth_id: req.query.auth_id
-    }));
+    }))
   });
   res.redirect(url);
 });
