@@ -77,6 +77,18 @@ router.get('/auth', function(req,res) {
 
   res.redirect('/')
 })
+router.post('/interactive', function(req, res){
+  console.log('REQ.BODY*****************');
+  console.log('ORIGINAL MESSAGE*****************');
+  console.log(JSON.parse(req.body.payload).original_message);
+  var doConfirm = JSON.parse(req.body.payload).actions[0].name === 'confirm';
+  if (doConfirm) {
+    console.log(doConfirm);
+
+  } else {
+    console.log(doConfirm);
+  }
+});
 
 
 module.exports = router;

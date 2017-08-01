@@ -3,10 +3,7 @@ var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
 var path = require('path');
 var logger = require('morgan');
-var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var passport = require('passport');
-var LocalStrategy = require('passport-local');
 var mongoose = require('mongoose');
 var connect = process.env.MONGODB_URI;
 var axios = require('axios');
@@ -28,22 +25,20 @@ rtm.start();
 // var models = require('./models');
 //
 var routes = require('./routes/routes');
-var auth = require('./routes/auth');
 var app = express();
 //
-// // view engine setup
-// var hbs = require('express-handlebars')({
-//   defaultLayout: 'main',
-//   extname: '.hbs'
-// });
-// app.engine('hbs', hbs);
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'hbs');
-//
+// view engine setup
+var hbs = require('express-handlebars')({
+  defaultLayout: 'main',
+  extname: '.hbs'
+});
+app.engine('hbs', hbs);
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'hbs');
+
 app.use(logger('tiny'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 //
 // // Passport
@@ -88,7 +83,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ));
 //
 // app.use('/', auth(passport));
-// app.use('/', routes);
+app.use('/', routes);
 //
 // // catch 404 and forward to error handler
 // app.use(function(req, res, next) {
@@ -123,30 +118,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // app.use(bodyParser.urlencoded({extended: true}));
 //
 
-app.get('/', function(req, res){
-  res.send('Hello!');
-});
-
-app.post('/interactive', function(req, res){
-  console.log('REQ.BODY*****************');
-  console.log('ORIGINAL MESSAGE*****************');
-  console.log(JSON.parse(req.body.payload).original_message);
-  var doConfirm = JSON.parse(req.body.payload).actions[0].name === 'confirm';
-  if (doConfirm) {
-    console.log(doConfirm);
-
-  } else {
-    console.log(doConfirm);
-  }
-});
-
-
-
-
-
-
-
-
+// app.get('/', function(req, res){
+//   res.send('Hello!');
+// });
 
 
 var port = process.env.PORT || 3000;
