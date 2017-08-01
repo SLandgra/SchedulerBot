@@ -32,11 +32,28 @@ router.get('/auth', function(req,res) {
     if(!err){
       oauth2Client.setCredentials(tokens);
       tokes = tokens;
-        oauth2Client.setCredentials({
-          access_token: tokes.access_token,
-          refresh_token: tokes.refresh_token
-        })
-        addToCalendar(oauth2Client,'nothing','nothing')
+      oauth2Client.setCredentials({
+        access_token: tokes.access_token,
+        refresh_token: tokes.refresh_token
+      })
+      var testobj= { source: 'agent',
+  resolvedQuery: 'remind me to buy tacos at The Market on 2017-08-01',
+  action: 'input.reminder.add',
+  actionIncomplete: false,
+  parameters:
+   { date: [ '2017-08-01' ],
+     subject: [ 'buy tacos at The Market' ] },
+  contexts: [],
+  metadata:
+   { intentId: '6c0d78b9-5ec0-48eb-9ab5-baf31b2aa0ad',
+     webhookUsed: 'false',
+     webhookForSlotFillingUsed: 'false',
+     intentName: 'reminder.add' },
+  fulfillment:
+   { speech: 'You need me to schedule a reminder on 2017-08-01 to buy tacos at The Market.',
+     messages: [ [Object] ] },
+  score: 1 }
+      addToCalendar(oauth2Client, testobj,'nothing')
       new User({
         google: tokes
       }).save(function(err){
