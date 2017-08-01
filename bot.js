@@ -13,6 +13,7 @@ var User = models.User;
 
 var rtm = new RtmClient(token);
 
+var url = require('./googleStuff/authUrl');
 // WEB API
 var WebClient = require('@slack/client').WebClient;
 var web = new WebClient(token);
