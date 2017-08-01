@@ -17,7 +17,7 @@ var checker = function(user, callback){
     oauth2Client.refreshAccessToken(function(err, tokens){
       var obj = user.google;
       obj.access_token = oauth2Client.access_token;
-      User.findById(user._id, { $set: {google: obj}}, callback())
+      User.findByIdAndUpdate(user._id, { $set: {google: obj}}, callback())
     })
   }
   else{

@@ -64,7 +64,7 @@ router.get('/auth', function(req,res) {
   //    messages: [ [Object] ] },
   // score: 1 }
   //     addToCalendar(oauth2Client, testobj,'nothing')
-  User.findById(user_id, { $set: {google: tokes}}, function(err){
+  User.findByIdAndUpdate(user_id, { $set: {google: tokes}}, function(err){
     if(err){
       console.log(err)
     }else{
