@@ -1,5 +1,4 @@
 <<<<<<< HEAD
-<<<<<<< HEAD
 dev.markdown
 .env
 node_modules/
@@ -11,8 +10,6 @@ npm-debug.log
 connect.js
 env.sh
 =======
-=======
->>>>>>> d960b1a9c3a4f04a6c7a383b2ea598fb57973508
 # Logs
 logs
 *.log
@@ -72,7 +69,4 @@ typings/
 # dotenv environment variables file
 .env
 
-<<<<<<< HEAD
->>>>>>> d960b1a9c3a4f04a6c7a383b2ea598fb57973508
-=======
 >>>>>>> d960b1a9c3a4f04a6c7a383b2ea598fb57973508
