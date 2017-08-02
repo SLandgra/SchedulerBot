@@ -90,14 +90,26 @@ router.post('/interactive', function(req, res){
   console.log(JSON.parse(req.body.payload));
   console.log('USER NAME & ID FROM SLACK INTERACTIVE******************');
   console.log(JSON.parse(req.body.payload).user);
+  var slackId = SON.parse(req.body.payload).user.id;
 
   var doConfirm = JSON.parse(req.body.payload).actions[0].name === 'confirm';
   if (doConfirm) {
-    var auth = oauth2Client
-    addToCalendar(auth, JSON.parse(req.body.payload));
-    rtm.sendMessage('OK! Got it, I will!', JSON.parse(req.body.payload).channel.id);
+    // find the user in database, get pending data, pass it in addToCalendar;
+    User.findOne({slackID: slackId}, function(err, user){
+      if(!err){
+        var auth = oauth2Client
+        addToCalendar(auth, user.pending);
+        rtm.sendMessage('OK! Got it, I will!', JSON.parse(req.body.payload).channel.id);
+      } else {
+        console.log('err,' err)
+      }
+    });
+
+
+
 
   } else {
+    // delete the pending data from database.
     console.log(doConfirm);
     rtm.sendMessage('Oh no...', JSON.parse(req.body.payload).channel.id);
   }

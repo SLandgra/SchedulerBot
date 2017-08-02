@@ -47,11 +47,16 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
         lang: "en",
         sessionId: message.user
       }
-    }).then((resp) => {
+    }).then(async (resp) => {
       console.log('AI RESPONSE DATA RESULT ****************************************');
       console.log(resp.data.result);
       var aiResponse = resp.data.result.fulfillment.speech;
       if (resp.data.result.action === 'input.reminder.add' && resp.data.result.actionIncomplete === false){
+        // put pending task from database
+        var user_get_pending_info = await User.findByIdAndUpdateupdate(user._id, {
+          pending: {subject: resp.data.result.parameters.subject[0], date: resp.data.result.parameters.date[0]}
+        });
+
         var interactive = {
           "attachments": [
             {
@@ -78,6 +83,7 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
           ]
         }
 
+        console.log("I'm before PostMessage");
         web.chat.postMessage(message.channel, 'Do you want to confirm your reminder?', interactive, function(err, res) {
           if (err) {
             console.log('POSTING Error:', err);

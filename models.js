@@ -18,7 +18,8 @@ var meetingSchema = mongoose.Schema({
 
 var userSchema = mongoose.Schema({
   google: Object,
-  slackID: String
+  slackID: String,
+  pending: Object
 });
 
 var inviteSchema = mongoose.Schema({
