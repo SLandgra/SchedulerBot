@@ -10,6 +10,7 @@ var apiToken = process.env.API_ACCESS_TOKEN;
 var mongoose = require('mongoose')
 var models = require('./models');
 var User = models.User;
+var Task = models.Task;
 
 var rtm = new RtmClient(token);
 
@@ -52,10 +53,17 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
       console.log(resp.data.result);
       var aiResponse = resp.data.result.fulfillment.speech;
       if (resp.data.result.action === 'input.reminder.add' && resp.data.result.actionIncomplete === false){
+        console.log('***************IN HERE****************');
         // put pending task from database
-        var user_get_pending_info = await User.findByIdAndUpdateupdate(user._id, {
-          pending: {subject: resp.data.result.parameters.subject[0], date: resp.data.result.parameters.date[0]}
-        });
+        var newTask = new Task({
+          subject: resp.data.result.parameter.subject[0],
+          day: resp.data.result.parameter.date[0],
+          user_id: message.user,
+          pending: true
+        })
+        console.log('***********ABOUT TO SAVE TASK***********');
+        var task = await newTask.save()
+        console.log('***********SAVE TASK***********');
 
         var interactive = {
           "attachments": [
