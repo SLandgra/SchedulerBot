@@ -24,7 +24,6 @@ var addToCalendarTask = async function(slackID){
         resource = {
           'summary': task.subject,
           'start':{
-            'dateTime'
             'date': task.day
           },
           'end':{
