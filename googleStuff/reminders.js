@@ -11,12 +11,14 @@ var reminder = async function (slackID, callback){
       if(range<=0){
 
       }else{
-        var interval = setInterval(messagesender, 100*60*30);
+        var interval = setInterval(messagesender, 1000*30);
+        // var interval = setInterval(messagesender, 1000*60*30);
         function messagesender(){
             if((range+36000000 <=0-1000*60*30)&&(range+36000000 >=0+1000*60*30)){
               callback(task.subject, 'today');
               clearInterval(interval);
-            }else if((range<=1000*60*60*34 - 1000*60*30)&&(range>=1000*60*60*34 + 1000*60*30)){
+            }else{
+            // }else if((range<=1000*60*60*34 - 1000*60*30)&&(range>=1000*60*60*34 + 1000*60*30)){
               callback(task.subject, 'tomorrow');
           }
         }
@@ -25,3 +27,5 @@ var reminder = async function (slackID, callback){
     }
   })
 }
+
+module.exports = reminder
