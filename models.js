@@ -15,6 +15,8 @@ var meetingSchema = mongoose.Schema({
   subject: String,
   location: String,
   meeting_length: String,
+  pending: Boolean,
+  event_id: String
 });
 
 var userSchema = mongoose.Schema({
@@ -25,7 +27,7 @@ var userSchema = mongoose.Schema({
 var inviteSchema = mongoose.Schema({
   subject: String,
   day: String,
-  event_id: String,
+  meeting_id: String,
   user_id: String
 });
 

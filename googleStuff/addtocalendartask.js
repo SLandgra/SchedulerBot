@@ -18,7 +18,7 @@ var addToCalendarTask = async function(slackID){
     access_token: user.google.access_token,
     refresh_token: user.google.refresh_token
   });
-  var tasks = await Task.find({user_id:user._id});
+  var tasks = await Task.find({user_id:slackID});
   await tasks.forEach(function(task){
     if(task.pending === true){
         resource = {

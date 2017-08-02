@@ -3,31 +3,36 @@ var googleAuth = require('google-auth-library');
 var OAuth2 = google.auth.OAuth2
 var calendar = google.calendar('v3');
 var models = require('../models')
-var Task = models.Task;
-var User = models.User
+var Meeting = models.Task;
+var User = models.User;
+var Invite = models.Invite;
 var oauth2Client = new OAuth2(
   process.env.GCLIENT,
   process.env.GSECRET,
   process.env.REDIRECT
 )
 
-var addToCalendarTask = async function(slackID){
+var addToCalendarMeeting = async function(slackID){
   var resource = {}
   var user = await User.findOne({slackID:slackID});
   oauth2Client.setCredentials({
     access_token: user.google.access_token,
     refresh_token: user.google.refresh_token
   });
-  var tasks = await Task.find({user_id:user._id});
-  await tasks.forEach(function(task){
-    if(task.pending === true){
+  var invite = await Invite.find({user_id: user._id})
+  var meetings = await Meeting.find({invite.meeting_id})
+  await meetings.forEach(function(meeting){
+    if(meetings.pending === true){
         resource = {
-          'summary': task.day,
+          'summary': meeting.day,
+          'location':meeting.location|| '',
           'start':{
-            'date': task.day
+            'dateTime': meeting.time,
+            'America/Los_Angeles'
           },
           'end':{
-            'date': task.day
+            'dateTime': meeting.time+meeting.meeting_length,
+            'America/Los_Angeles'
           },
         }
       }
