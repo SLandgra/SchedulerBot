@@ -7,6 +7,7 @@ var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS;
 var token = process.env.SLACK_BOT_TOKEN || '';
 var apiToken = process.env.API_ACCESS_TOKEN;
 
+var checktoken = require('./googleStuff/checktoken')
 var mongoose = require('mongoose')
 var models = require('./models');
 var User = models.User;
@@ -37,6 +38,7 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
     rtm.sendMessage(`<@${message.user}>! Please click on the link to authenticate! ${url}`, message.channel);
     return;
   } else {
+    await checktoken(user);
     axios({
       method: 'post',
       url: 'https://api.api.ai/v1/query?v=20150910',
