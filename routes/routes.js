@@ -8,7 +8,6 @@ var OAuth2 = google.auth.OAuth2
 var calendar = google.calendar('v3');
 var rtm = require('../bot');
 var addToCalendarTask = require('../googleStuff/addToCalendartask');
-var reminder = require('../googleStuff/reminders');
 var oauth2Client = new OAuth2(
   process.env.GCLIENT,
   process.env.GSECRET,
@@ -86,7 +85,7 @@ router.get('/auth', function(req,res) {
 
   res.redirect('/')
 })
-router.post('/interactive', function(req, res){
+router.post('/interactive', async function(req, res){
   console.log('REQUEST PAYLOAD FROM SLACK INTERACTIVE*****************');
   console.log(JSON.parse(req.body.payload));
   console.log('USER NAME & ID FROM SLACK INTERACTIVE******************');
@@ -95,11 +94,10 @@ router.post('/interactive', function(req, res){
 
   var doConfirm = JSON.parse(req.body.payload).actions[0].name === 'confirm';
   if (doConfirm) {
-    addToCalendarTask(slackId);
+    await addToCalendarTask(slackId, reminderMessage);
     function reminderMessage(task, when){
       rtm.sendMessage('Rember to '+ task +' '+ when + '!', JSON.parse(req.body.payload).channel.id);
     }
-    reminder(slackId, reminderMessage);
 
     rtm.sendMessage('OK! Got it, I will!', JSON.parse(req.body.payload).channel.id);
   } else {
