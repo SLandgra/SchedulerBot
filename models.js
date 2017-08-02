@@ -4,7 +4,8 @@ var taskSchema = mongoose.Schema({
   subject: String,
   day: String,
   event_id: String,
-  user_id: String
+  user_id: String,
+  pending: Boolean
 });
 
 var meetingSchema = mongoose.Schema({
