@@ -7,7 +7,7 @@ var googleAuth = require('google-auth-library');
 var OAuth2 = google.auth.OAuth2
 var calendar = google.calendar('v3');
 var rtm = require('../bot');
-var addToCalendar = require('../googleStuff/addToCalendar');
+var addToCalendar = require('../googleStuff/addToCalendartask');
 var oauth2Client = new OAuth2(
   process.env.GCLIENT,
   process.env.GSECRET,
