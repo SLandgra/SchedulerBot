@@ -8,20 +8,16 @@ var oauth2Client = new OAuth2(
   process.env.REDIRECT
 )
 
-var checker = function(user, callback){
+var checker = function(user){
   if((user.google.expiry_date-(new Date().getTime()))<=0){
     oauth2Client.setCredentials({
       access_token: user.google.access_token,
       refresh_token: user.google.refresh_token
     })
     oauth2Client.refreshAccessToken(function(err, tokens){
-      var obj = user.google;
-      obj.access_token = oauth2Client.access_token;
-      User.findByIdAndUpdate(user._id, { $set: {google: obj}}, callback())
+      user.google.access_token = oauth2Client.access_token;
+      user.save();
     })
-  }
-  else{
-    callback();
   }
 }
 
