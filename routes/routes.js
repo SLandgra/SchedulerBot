@@ -6,6 +6,7 @@ var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 var OAuth2 = google.auth.OAuth2
 var calendar = google.calendar('v3');
+var rtm = require('../bot');
 var addToCalendar = require('../googleStuff/addToCalendar');
 var oauth2Client = new OAuth2(
   process.env.GCLIENT,
@@ -27,15 +28,14 @@ router.get('/connect', function(req,res){
     prompt: 'consent',
     scope: ['https://www.googleapis.com/auth/calendar',
             'https://www.googleapis.com/auth/userinfo.profile'],
-    state: encodeURIComponent(JSON.stringify({
-      auth_id: req.query.auth_id
-    }));
+    state: req.query.auth_id
   });
   res.redirect(url);
 });
 
 router.get('/auth', function(req,res) {
-  var user_id = req.query.auth_id;
+  console.log("req.query***********", req.query);
+  var user_id = req.query.state;
   var code = req.query.code;
   var tokes;
   oauth2Client.getToken(code, function (err, tokens){
@@ -64,7 +64,7 @@ router.get('/auth', function(req,res) {
   //    messages: [ [Object] ] },
   // score: 1 }
   //     addToCalendar(oauth2Client, testobj,'nothing')
-  User.findByIdAndUpdate(user_id, { $set: {google: tokes}}, function(err){
+  User.findByIdAndUpdate(user_id,{google: tokes}, function(err){
     if(err){
       console.log(err)
     }else{
@@ -86,16 +86,23 @@ router.get('/auth', function(req,res) {
   res.redirect('/')
 })
 router.post('/interactive', function(req, res){
-  console.log('REQ.BODY*****************');
-  console.log('ORIGINAL MESSAGE*****************');
-  console.log(JSON.parse(req.body.payload).original_message);
+  console.log('REQUEST PAYLOAD FROM SLACK INTERACTIVE*****************');
+  console.log(JSON.parse(req.body.payload));
+  console.log('USER NAME & ID FROM SLACK INTERACTIVE******************');
+  console.log(JSON.parse(req.body.payload).user);
+
   var doConfirm = JSON.parse(req.body.payload).actions[0].name === 'confirm';
   if (doConfirm) {
-    console.log(doConfirm);
+    var auth = oauth2Client
+    addToCalendar(auth, JSON.parse(req.body.payload));
+    rtm.sendMessage('OK! Got it, I will!', JSON.parse(req.body.payload).channel.id);
 
   } else {
     console.log(doConfirm);
+    rtm.sendMessage('Oh no...', JSON.parse(req.body.payload).channel.id);
   }
+
+  res.end();
 });
 
 

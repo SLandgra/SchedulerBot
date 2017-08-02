@@ -5,7 +5,7 @@ var googleAuth = require('google-auth-library');
 var OAuth2 = google.auth.OAuth2
 var calendar = google.calendar('v3');
 
-var addToCalendar = function(auth,eventInfo,callback){
+var addToCalendar = function(auth,eventInfo){
   var resource = {}
   if(eventInfo.action === 'input.reminder.add'){
     resource = {

@@ -13,7 +13,6 @@ var User = models.User;
 
 var rtm = new RtmClient(token);
 
-var url = require('./googleStuff/authUrl');
 // WEB API
 var WebClient = require('@slack/client').WebClient;
 var web = new WebClient(token);
@@ -30,9 +29,11 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
       user = await newuser.save()
     }
 
-  var authenticated = true;
-  if (!authenticated) {
-        // make user model
+  var authenticated = user.google;
+  if (!authenticated && message.subtype !== 'bot_message') {
+    var url = 'http://localhost:3000/connect?auth_id='+user._id;
+    console.log("message*************", message);
+    rtm.sendMessage(`<@${message.user}>! Please click on the link to authenticate! ${url}`, message.channel);
   } else {
     axios({
       method: 'post',
