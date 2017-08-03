@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var models = require('../models');
 var User = models.User;
+var Task = models.Task;
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 var OAuth2 = google.auth.OAuth2
@@ -101,9 +102,11 @@ router.post('/interactive', async function(req, res){
 
     rtm.sendMessage('OK! Got it, I will!', JSON.parse(req.body.payload).channel.id);
   } else if (doConfirm === 'cancel') {
+    var pendingTask = await Task.findOne({user_id: slackId, pending: true});
+    pendingTask.remove();
     // delete the pending data from database.
     console.log(doConfirm);
-    rtm.sendMessage('Oh no...', JSON.parse(req.body.payload).channel.id);
+    rtm.sendMessage('Oh no...task removed. Let me know when you need more help!', JSON.parse(req.body.payload).channel.id);
   }
   res.end();
 });

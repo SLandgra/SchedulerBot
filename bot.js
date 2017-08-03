@@ -35,7 +35,7 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
 
 
   if (!authenticated && message.subtype !== 'bot_message') {
-    var url = 'https://cb784a5d.ngrok.io/connect?auth_id='+user._id;
+    var url = 'https://c1b08373.ngrok.io/connect?auth_id='+user._id;
     rtm.sendMessage(`<@${message.user}>! Please click on the link to authenticate! ${url}`, message.channel);
     return;
   } else {
