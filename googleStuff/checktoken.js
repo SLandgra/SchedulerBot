@@ -1,6 +1,7 @@
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 var models = require('../models');
+var OAuth2 = google.auth.OAuth2;
 var User = models.User;
 var oauth2Client = new OAuth2(
   process.env.GCLIENT,

@@ -47,7 +47,6 @@ var addToCalendarTask = async function(slackID, callback){
                 task.remove();
               }else if((range<=1000*60*60*34 - 1000*60*30)&&(range>=1000*60*60*34 + 1000*60*30)){
                 callback(task.subject, 'tomorrow');
-                console.log("******IM IN TOMORROW CALLBACK********")
             }else if(range<0){
               clearInterval(interval);
             }
