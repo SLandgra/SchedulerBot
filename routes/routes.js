@@ -9,6 +9,7 @@ var OAuth2 = google.auth.OAuth2
 var calendar = google.calendar('v3');
 var rtm = require('../bot');
 var addToCalendarTask = require('../googleStuff/addToCalendartask');
+var addToCalendarMeeting = require('../googleStuff/addToCalendarmeeting');
 var oauth2Client = new OAuth2(
   process.env.GCLIENT,
   process.env.GSECRET,
@@ -92,21 +93,24 @@ router.post('/interactive', async function(req, res){
   console.log('USER NAME & ID FROM SLACK INTERACTIVE******************');
   console.log(JSON.parse(req.body.payload).user);
   var slackId = JSON.parse(req.body.payload).user.id;
-
   var doConfirm = JSON.parse(req.body.payload).actions[0].name;
+  var originalMessage = JSON.parse(req.body.payload).original_message.text;
   if (doConfirm === 'confirm') {
-    await addToCalendarTask(slackId, reminderMessage);
-    function reminderMessage(task, when){
-      rtm.sendMessage('Rember to '+ task +' '+ when + '!', JSON.parse(req.body.payload).channel.id);
+    if (originalMessage === 'Do you want to confirm your reminder?') {
+      await addToCalendarTask(slackId, reminderMessage);
+      function reminderMessage(task, when){
+        rtm.sendMessage('Remember to '+ task +' '+ when + '!', JSON.parse(req.body.payload).channel.id);
+      }
+    } else {
+      await addToCalendarMeeting(slackId);
     }
-
     rtm.sendMessage('OK! Got it, I will!', JSON.parse(req.body.payload).channel.id);
   } else if (doConfirm === 'cancel') {
     var pendingTask = await Task.findOne({user_id: slackId, pending: true});
     pendingTask.remove();
     // delete the pending data from database.
     console.log(doConfirm);
-    rtm.sendMessage('Oh no...task removed. Let me know when you need more help!', JSON.parse(req.body.payload).channel.id);
+    rtm.sendMessage('Oh no...task removed. Let me know when you need more help!!', JSON.parse(req.body.payload).channel.id);
   }
   res.end();
 });

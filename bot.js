@@ -12,6 +12,7 @@ var mongoose = require('mongoose')
 var models = require('./models');
 var User = models.User;
 var Task = models.Task;
+var Meeting = models.Meeting;
 
 var rtm = new RtmClient(token);
 
@@ -44,7 +45,31 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
 
     if(pendingTask.length){
       rtm.sendMessage(`<@${message.user}>! Please confirm your previous pending task by clicking the button!`, message.channel);
-    }else{
+    } else {
+      // geting users information
+
+      var msgToAI = message.text;
+      var userNameInfoObj = {};
+      if(message.text.indexOf('<@')!== -1){
+        var text = message.text;
+        // var converted_id = text.split('@')[1].split('>')[0];
+        var textArr = text.split('<');
+        var newArr = []
+        textArr.forEach(function(text){
+          if(text.indexOf('@')===0){
+            var converted_id = text.split('@')[1].split('>')[0];
+            var SlackUser = rtm.dataStore.getUserById(converted_id);
+            var realName = SlackUser.real_name.split(' ')[0];
+            var converted_text = realName + text.split('>')[1];
+            newArr.push(converted_text);
+            userNameInfoObj[converted_id] = realName;
+          } else {
+            newArr.push(text);
+          }
+        });
+        msgToAI = newArr.join('');
+      }
+
       axios({
         method: 'post',
         url: 'https://api.api.ai/v1/query?v=20150910',
@@ -53,13 +78,13 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
           'Content-Type': 'application/json; charset=utf-8',
         },
         data: {
-          query: message.text,
+          query: msgToAI,
           lang: "en",
           sessionId: message.user
         }
       }).then((resp) => {
-        console.log('AI RESPONSE DATA RESULT ****************************************');
-        console.log(resp.data.result);
+        // console.log('AI RESPONSE DATA RESULT ****************************************');
+        // console.log(resp.data.result);
         var aiResponse = resp.data.result.fulfillment.speech;
         if (resp.data.result.action === 'input.reminder.add' && resp.data.result.actionIncomplete === false){
 
@@ -72,33 +97,7 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
             if (err) {
               console.log('saving err!');
             } else {
-              var interactive = {
-                "attachments": [
-                  {
-                    "text": `${aiResponse} <@${message.user}>!`,
-                    "fallback": "You are unable to respond to the request",
-                    "callback_id": "confirmation",
-                    "color": "#3AA3E3",
-                    "attachment_type": "default",
-                    "actions": [
-                      {
-                          "name": "confirm",
-                          "text": "Confirm",
-                          "type": "button",
-                          "value": "confirm"
-                      },
-                      {
-                          "name": "cancel",
-                          "text": "Cancel",
-                          "type": "button",
-                          "value": "cancel"
-                      },
-                    ]
-                  }
-                ]
-              }
-
-              console.log("I'm before PostMessage");
+              var interactive = generateInteractive(aiResponse, message.user);
               web.chat.postMessage(message.channel, 'Do you want to confirm your reminder?', interactive, function(err, res) {
                 if (err) {
                   console.log('POSTING Error:', err);
@@ -106,7 +105,33 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
                   console.log('interactive sent');
                 }
               });
+            }
+          })
 
+        } else if (resp.data.result.action === 'input.meeting.add' && resp.data.result.actionIncomplete === false) {
+          console.log('ABOUT TO CREATE NEW MEETING. THESE ARE THE AI RESPONSE PARAMETERS.');
+          console.log("#######", resp.data.result.parameters['given-name']);
+
+          new Meeting({
+            day: resp.data.result.parameters.date,
+            time: resp.data.result.parameters.time,
+            invitees: resp.data.result.parameters['given-name'],
+            subject: resp.data.result.parameters.subject,
+            location: resp.data.result.parameters.location,
+            pending: true,
+            owenerID: message.user
+          }).save(function(err) {
+            if (err) {
+              console.log('saving err!');
+            } else {
+              var interactive = generateInteractive(aiResponse, message.user);
+              web.chat.postMessage(message.channel, 'Do you want to confirm your meeting?', interactive, function(err, res) {
+                if (err) {
+                  console.log('POSTING Error:', err);
+                } else {
+                  console.log('interactive sent');
+                }
+              });
             }
           })
 
@@ -116,14 +141,37 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
       }).catch(error => {
         console.log('axios error');
       }); //End of axios request
-
-
-
     }
-
-
   }
 });
+
+function generateInteractive(message, username) {
+  return {
+    "attachments": [
+      {
+        "text": `${message} <@${username}>!`,
+        "fallback": "You are unable to respond to the request",
+        "callback_id": "confirmation",
+        "color": "#3AA3E3",
+        "attachment_type": "default",
+        "actions": [
+          {
+              "name": "confirm",
+              "text": "Confirm",
+              "type": "button",
+              "value": "confirm"
+          },
+          {
+              "name": "cancel",
+              "text": "Cancel",
+              "type": "button",
+              "value": "cancel"
+          },
+        ]
+      }
+    ]
+  }
+}
 
 // Wait for the client to connect
 rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function() {
