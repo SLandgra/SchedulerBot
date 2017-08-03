@@ -92,15 +92,15 @@ router.post('/interactive', async function(req, res){
   console.log(JSON.parse(req.body.payload).user);
   var slackId = JSON.parse(req.body.payload).user.id;
 
-  var doConfirm = JSON.parse(req.body.payload).actions[0].name === 'confirm';
-  if (doConfirm) {
+  var doConfirm = JSON.parse(req.body.payload).actions[0].name;
+  if (doConfirm === 'confirm') {
     await addToCalendarTask(slackId, reminderMessage);
     function reminderMessage(task, when){
       rtm.sendMessage('Rember to '+ task +' '+ when + '!', JSON.parse(req.body.payload).channel.id);
     }
 
     rtm.sendMessage('OK! Got it, I will!', JSON.parse(req.body.payload).channel.id);
-  } else {
+  } else if (doConfirm === 'cancel') {
     // delete the pending data from database.
     console.log(doConfirm);
     rtm.sendMessage('Oh no...', JSON.parse(req.body.payload).channel.id);
