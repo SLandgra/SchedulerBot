@@ -16,7 +16,8 @@ var meetingSchema = mongoose.Schema({
   location: String,
   meeting_length: String,
   pending: Boolean,
-  event_id: String
+  event_id: String,
+  ownerID: String
 });
 
 var userSchema = mongoose.Schema({
