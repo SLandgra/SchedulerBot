@@ -42,8 +42,9 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
   } else {
     await checktoken(user);
     var pendingTask = await Task.find({user_id: message.user, pending: true});
+    var pendingMeeting = await Meeting.find({ownerID: message.user, pending: true});
 
-    if(pendingTask.length){
+    if(pendingTask.length || pendingMeeting.length){
       rtm.sendMessage(`<@${message.user}>! Please confirm your previous pending task by clicking the button!`, message.channel);
     } else {
       // geting users information
@@ -83,8 +84,8 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
           sessionId: message.user
         }
       }).then((resp) => {
-        // console.log('AI RESPONSE DATA RESULT ****************************************');
-        // console.log(resp.data.result);
+        console.log('AI RESPONSE DATA RESULT ****************************************');
+        console.log(resp.data.result);
         var aiResponse = resp.data.result.fulfillment.speech;
         if (resp.data.result.action === 'input.reminder.add' && resp.data.result.actionIncomplete === false){
 
@@ -109,17 +110,31 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
           })
 
         } else if (resp.data.result.action === 'input.meeting.add' && resp.data.result.actionIncomplete === false) {
-          console.log('ABOUT TO CREATE NEW MEETING. THESE ARE THE AI RESPONSE PARAMETERS.');
-          console.log("#######", resp.data.result.parameters['given-name']);
+          var invitees = resp.data.result.parameters['given-name'].map(realName => {
+            for (key in userNameInfoObj) {
+              if (userNameInfoObj[key].indexOf(realName) > -1) {
+                return key;
+              }
+            }
+          });
+          var meeting_length = '00:30:00';
+
+          var msg_subject = 'Meeting with ';
+          for (key in userNameInfoObj){
+            msg_subject = msg_subject + userNameInfoObj[key] + " / "
+          }
+          var creator = rtm.dataStore.getUserById(message.user).real_name.split(' ')[0];
+          msg_subject = msg_subject + creator
 
           new Meeting({
             day: resp.data.result.parameters.date,
             time: resp.data.result.parameters.time,
-            invitees: resp.data.result.parameters['given-name'],
-            subject: resp.data.result.parameters.subject,
+            invitees: invitees,
+            subject: resp.data.result.parameters.subject || msg_subject,
             location: resp.data.result.parameters.location,
+            meeting_length: meeting_length,
             pending: true,
-            owenerID: message.user
+            ownerID: message.user
           }).save(function(err) {
             if (err) {
               console.log('saving err!');
@@ -132,6 +147,18 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
                   console.log('interactive sent');
                 }
               });
+
+              // try dropdown menu: if found confilict time, execute the following.
+              // if no conflict, send confirmation.
+              var meetingtime = generateMenu(aiResponse, message.user);
+              web.chat.postMessage(message.channel, 'Please choose an available time slot', meetingtime, function(err, res) {
+                if (err) {
+                  console.log('POSTING Error:', err);
+                } else {
+                  console.log('interactive sent');
+                }
+              });
+
             }
           })
 
@@ -170,6 +197,59 @@ function generateInteractive(message, username) {
         ]
       }
     ]
+  }
+}
+
+
+function generateMenu(message, username) {
+  return {
+    "attachments": [
+        {
+            "text": `${message} <@${username}>!`,
+            "fallback": "If you could read this message, you'd be choosing something fun to do right now.",
+            "color": "#3AA3E3",
+            "attachment_type": "default",
+            "callback_id": "free_time_selection",
+            "actions": [
+                {
+                    "name": "available time",
+                    "text": "Choose available time",
+                    "type": "select",
+                    "options": [
+                        {
+                            "text": "Hearts",
+                            "value": "hearts"
+                        },
+                        {
+                            "text": "Bridge",
+                            "value": "bridge"
+                        },
+                        {
+                            "text": "Checkers",
+                            "value": "checkers"
+                        },
+                        {
+                            "text": "Chess",
+                            "value": "chess"
+                        },
+                        {
+                            "text": "Poker",
+                            "value": "poker"
+                        },
+                        {
+                            "text": "Falken's Maze",
+                            "value": "maze"
+                        },
+                        {
+                            "text": "Global Thermonuclear War",
+                            "value": "war"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+
   }
 }
 

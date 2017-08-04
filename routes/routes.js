@@ -87,11 +87,13 @@ router.get('/auth', function(req,res) {
 
   res.redirect('/')
 })
+
 router.post('/interactive', async function(req, res){
   console.log('REQUEST PAYLOAD FROM SLACK INTERACTIVE*****************');
   console.log(JSON.parse(req.body.payload));
-  console.log('USER NAME & ID FROM SLACK INTERACTIVE******************');
-  console.log(JSON.parse(req.body.payload).user);
+  console.log('SELECTED OPTIONS INTERACTIVE******************');
+  console.log(JSON.parse(req.body.payload).actions[0].selected_options[0].value);
+
   var slackId = JSON.parse(req.body.payload).user.id;
   var doConfirm = JSON.parse(req.body.payload).actions[0].name;
   var originalMessage = JSON.parse(req.body.payload).original_message.text;
@@ -106,14 +108,23 @@ router.post('/interactive', async function(req, res){
     }
     rtm.sendMessage('OK! Got it, I will!', JSON.parse(req.body.payload).channel.id);
   } else if (doConfirm === 'cancel') {
-    var pendingTask = await Task.findOne({user_id: slackId, pending: true});
-    pendingTask.remove();
-    // delete the pending data from database.
-    console.log(doConfirm);
-    rtm.sendMessage('Oh no...task removed. Let me know when you need more help!!', JSON.parse(req.body.payload).channel.id);
+    if (originalMessage === 'Do you want to confirm your reminder?') {
+      var pendingTask = await Task.findOne({user_id: slackId, pending: true});
+      pendingTask.remove();
+      rtm.sendMessage('Oh no...task removed. Let me know when you need more help!!', JSON.parse(req.body.payload).channel.id);
+    } else {
+      var pendingMeeting = await Meeting.findOne({ownerID: slackId, pending: true});
+      pendingMeeting.remove();
+      rtm.sendMessage('Oh no...meeting removed. Let me know when you need more help!!', JSON.parse(req.body.payload).channel.id);
+    }
   }
   res.end();
 });
+
+
+router.post('/timeselection', function(req, res){
+
+})
 
 
 module.exports = router;
