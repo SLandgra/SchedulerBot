@@ -31,20 +31,18 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
       })
       user = await newuser.save()
     }
-
   var authenticated = user.google;
 
 
   if (!authenticated && message.subtype !== 'bot_message') {
     var url = 'https://c1b08373.ngrok.io/connect?auth_id='+user._id;
     rtm.sendMessage(`<@${message.user}>! Please click on the link to authenticate! ${url}`, message.channel);
-    return;
   } else {
     await checktoken(user);
     var pendingTask = await Task.find({user_id: message.user, pending: true});
     var pendingMeeting = await Meeting.find({ownerID: message.user, pending: true});
 
-    if(pendingTask.length || pendingMeeting.length){
+    if (pendingTask.length || pendingMeeting.length) {
       rtm.sendMessage(`<@${message.user}>! Please confirm your previous pending task by clicking the button!`, message.channel);
     } else {
       // geting users information
@@ -88,7 +86,6 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
         console.log(resp.data.result);
         var aiResponse = resp.data.result.fulfillment.speech;
         if (resp.data.result.action === 'input.reminder.add' && resp.data.result.actionIncomplete === false){
-
           new Task({
             subject: resp.data.result.parameters.subject[0],
             day: resp.data.result.parameters.date[0],
@@ -108,7 +105,6 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
               });
             }
           })
-
         } else if (resp.data.result.action === 'input.meeting.add' && resp.data.result.actionIncomplete === false) {
           var invitees = resp.data.result.parameters['given-name'].map(realName => {
             for (key in userNameInfoObj) {
@@ -125,6 +121,7 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
           }
           var creator = rtm.dataStore.getUserById(message.user).real_name.split(' ')[0];
           msg_subject = msg_subject + creator
+
 
           //check conflict
           // if(conflict){
@@ -151,7 +148,6 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
             if (err) {
               console.log('saving err!');
             } else {
-
               var interactive = generateInteractive(aiResponse, message.user);
               web.chat.postMessage(message.channel, 'Do you want to confirm your meeting?', interactive, function(err, res) {
                 if (err) {
@@ -160,16 +156,14 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
                   console.log('interactive sent');
                 }
               });
-
             }
           })
-
         } else {
           rtm.sendMessage(`${aiResponse} <@${message.user}>!`, message.channel);
         }
       }).catch(error => {
         console.log('axios error');
-      }); //End of axios request
+      }); //End of axios request to api.ai
     }
   }
 });
