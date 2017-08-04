@@ -94,6 +94,8 @@ router.post('/interactive', async function(req, res){
   console.log('SELECTED OPTIONS INTERACTIVE******************');
   console.log(JSON.parse(req.body.payload).actions[0].selected_options[0].value);
 
+  // we can get the time slot they picked from payload
+
   var slackId = JSON.parse(req.body.payload).user.id;
   var doConfirm = JSON.parse(req.body.payload).actions[0].name;
   var originalMessage = JSON.parse(req.body.payload).original_message.text;
@@ -120,11 +122,6 @@ router.post('/interactive', async function(req, res){
   }
   res.end();
 });
-
-
-router.post('/timeselection', function(req, res){
-
-})
 
 
 module.exports = router;
