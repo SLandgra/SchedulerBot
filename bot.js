@@ -126,6 +126,18 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
           var creator = rtm.dataStore.getUserById(message.user).real_name.split(' ')[0];
           msg_subject = msg_subject + creator
 
+          //check conflict
+          // if(conflict){
+          //   var meetingtime = generateMenu(aiResponse, message.user);
+          //   web.chat.postMessage(message.channel, 'Please choose an available time slot', meetingtime, function(err, res) {
+          //     if (err) {
+          //       console.log('POSTING Error:', err);
+          //     } else {
+          //       console.log('interactive sent');
+          //     }
+          //   });
+          // }
+
           new Meeting({
             day: resp.data.result.parameters.date,
             time: resp.data.result.parameters.time,
@@ -139,19 +151,9 @@ rtm.on(RTM_EVENTS.MESSAGE, async function(message) {
             if (err) {
               console.log('saving err!');
             } else {
+
               var interactive = generateInteractive(aiResponse, message.user);
               web.chat.postMessage(message.channel, 'Do you want to confirm your meeting?', interactive, function(err, res) {
-                if (err) {
-                  console.log('POSTING Error:', err);
-                } else {
-                  console.log('interactive sent');
-                }
-              });
-
-              // try dropdown menu: if found confilict time, execute the following.
-              // if no conflict, send confirmation.
-              var meetingtime = generateMenu(aiResponse, message.user);
-              web.chat.postMessage(message.channel, 'Please choose an available time slot', meetingtime, function(err, res) {
                 if (err) {
                   console.log('POSTING Error:', err);
                 } else {
@@ -201,6 +203,7 @@ function generateInteractive(message, username) {
 }
 
 
+// hard coded options
 function generateMenu(message, username) {
   return {
     "attachments": [
